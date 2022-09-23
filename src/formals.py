@@ -19,8 +19,13 @@ parser = argparse.ArgumentParser(
 
 def main():
     args = parser.parse_args()
+    
+    output_dir: typing.Final[pathlib.Path] = pathlib.Path(__file__).parent.parent / "output"
 
-    # TODO: Finish
+    re: regex.Regex = regex_parser.parse("(ab+ba)*(1+a+ba)")
+    aut: automata.Automata = regex_automata.regex_to_automata(re)
+    aut = automata_determ.make_full_dfa(aut)
+    automata_dot.dump(aut, output_dir / "task1.svg", key_repr=lambda k: repr(set(k)) if isinstance(k, frozenset) else repr(k))
 
     return 0
 

@@ -43,6 +43,8 @@ class BaseAutomataBinOp:
                     (i, edge.dst.key),
                     edge.label
                 )
+        
+        return result
     
     def raw_cross(self) -> Automata:
         """
@@ -78,6 +80,8 @@ class BaseAutomataBinOp:
                     (node1.key, edge2.dst.key),
                     edge2.label
                 )
+        
+        return result
 
 
 class BaseAutomataTransform:
@@ -125,7 +129,7 @@ class AutomataJoin(BaseAutomataBinOp):
         end: Node = result.make_node(term=True)
 
         for i in range(2):
-            for node in self.aut[i].get_terms():
+            for node in self.auts[i].get_terms():
                 result.link((i, node.key), end, "")
         
         return result

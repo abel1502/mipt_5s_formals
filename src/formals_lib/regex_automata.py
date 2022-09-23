@@ -12,6 +12,8 @@ from .itree import TreeVisitor
 
 
 class RegexToAutomataConverter(TreeVisitor[Regex]):
+    warn_on_generic: typing.ClassVar[bool] = True
+    
     @TreeVisitor.handler(Letter)
     def visit_letter(self, node: Letter) -> Automata:
         result = Automata(node.letter)
