@@ -108,10 +108,10 @@ class AutomataConcat(BaseAutomataBinOp):
     def apply(self) -> Automata:
         result: Automata = self.raw_merge()
 
-        result.link(result.start, (0, 0), "")
+        result.link(result.start, (0, self.aut1.start.key), "")
 
         for node in self.aut1.get_terms():
-            result.link((0, node.key), (1, 0), "")
+            result.link((0, node.key), (1, self.aut2.start.key), "")
         
         for node in self.aut2.get_terms():
             result.node((1, node.key)).is_term = True
@@ -123,8 +123,8 @@ class AutomataJoin(BaseAutomataBinOp):
     def apply(self) -> Automata:
         result: Automata = self.raw_merge()
 
-        result.link(result.start, (0, 0), "")
-        result.link(result.start, (1, 0), "")
+        for i in range(2):
+            result.link(result.start, (i, self.auts[i].start.key), "")
 
         end: Node = result.make_node(term=True)
 
@@ -170,6 +170,8 @@ class AutomataPlusPow(BaseAutomataTransform):
         result.set_start(new_start)
 
         for node in result.get_terms():
+            if node is new_start:
+                continue
             result.link(node, new_start, "")
         
         return result

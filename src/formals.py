@@ -54,8 +54,8 @@ def solve_task_2(output_dir: pathlib.Path):
 def solve_task_3(output_dir: pathlib.Path):
     re: regex.Regex = regex_parser.parse("a((ba)*a(ab)* + a)*")
     aut: automata.Automata = regex_automata.regex_to_automata(re)
-    aut = automata_determ.make_full_dfa(aut)
-    # aut = automata_complement.complement(aut)
+    # aut = automata_determ.make_full_dfa(aut)
+    aut = automata_complement.complement(aut)
     
     namer = Namer()
     automata_dot.dump(aut, output_dir / "task3.svg", key_repr=lambda k: namer[k])
@@ -68,7 +68,7 @@ def main():
 
     # solve_task_1(output_dir)
     # solve_task_2(output_dir)
-    solve_task_3(output_dir)
+    # solve_task_3(output_dir)
 
     return 0
 
