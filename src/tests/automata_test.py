@@ -249,6 +249,12 @@ class AutomataTest(unittest.TestCase):
             rand_wl_size=50,
             name="aut2 make_full_dfa"
         )
+        
+        for node in fdfa.get_nodes():
+            node.is_term = True
+        
+        for word in self.random_wordlist(fdfa.alphabet, size=50):
+            self.assertAccepts(fdfa, word)
 
     @unittest.skip
     def test_regex(self):

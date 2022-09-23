@@ -169,9 +169,6 @@ class AutomataPlusPow(BaseAutomataTransform):
         return result
 
 
-# TODO: AutomataComplement
-
-
 class AutomataTrimmer(BaseAutomataTransform):
     def apply(self) -> Automata:
         result = self.raw_copy()
@@ -211,3 +208,6 @@ def pow_plus(aut: Automata) -> Automata:
 
 def trim(aut: Automata) -> Automata:
     return AutomataTrimmer(aut).apply()
+
+
+# AutomataComplement and complement() are implemented in a separate file, since they rely on make_full_dfa()
