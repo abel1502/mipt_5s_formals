@@ -204,7 +204,7 @@ class MakeFullDFA(MakeDeterministic):
             for letter in missing_alphabet:
                 result.link(node, end, letter)
         
-        return result
+        return trim(result)
 
 
 def make_edges_01(aut: Automata) -> Automata:

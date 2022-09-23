@@ -173,7 +173,7 @@ class Automata:
 
         result._next_id = self._next_id
         result.start.is_term = self.start.is_term
-        result.start.key = self.start.key
+        result.change_key(result.start, self.start.key)
 
         for node in self.get_nodes():
             if node is self.start:

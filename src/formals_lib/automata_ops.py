@@ -153,6 +153,8 @@ class AutomataStar(BaseAutomataTransform):
         result.set_start(new_start)
 
         for node in result.get_terms():
+            if node is new_start:
+                continue
             node.is_term = False
             result.link(node, new_start, "")
         
