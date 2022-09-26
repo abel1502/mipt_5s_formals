@@ -28,7 +28,7 @@ class Node:
         raise NotImplementedError()
     
     def is_deterministic(self) -> bool:
-        return all(len(e) == 1 for e in self.out)
+        return all(len(e) == 1 for e in self.out) and len(set(map(lambda x: x.label, self.out))) == len(self.out)
     
     def __hash__(self) -> int:
         # It's certainly fine here, since we never consider nodes 'equal'
@@ -166,7 +166,7 @@ class Automata:
         return (node for node in self.get_nodes() if node.is_term)
     
     def is_deterministic(self) -> bool:
-        return all(len(e) == 1 for e in self.get_edges())
+        return all(node.is_deterministic() for node in self.get_nodes())
     
     def copy(self) -> Automata:
         result = Automata(self.alphabet)
