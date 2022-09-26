@@ -6,12 +6,16 @@ import dataclasses
 import random
 import string
 import itertools
+import re
 
 import utils
 from formals_lib.automata import *
 from formals_lib.automata_ops import *
 from formals_lib.automata_determ import *
 from formals_lib.regex_automata import *
+from formals_lib.regex_parser import parse
+
+from regex_to_re import regex_to_re
 
 
 @dataclasses.dataclass(frozen=True)
@@ -75,6 +79,28 @@ class AutomataTest(unittest.TestCase):
             for word in wordlist:
                 self.assertEqual(self.check_word(aut1, word), self.check_word(aut2, word),
                     f"Automatas should've agreed on '{word}'"
+                )
+    
+    def assertCorrectRegex(self, regex: str | Regex,
+                         wordlist: typing.Iterable[str] = (),
+                         rand_wl_size: int = 10) -> None:
+        if isinstance(regex, str):
+                regex = parse(regex)
+        
+        with self.subTest(f"Regex correctness: '{reconstruct(regex)}'"):
+            wordlist: typing.List[str] = list(wordlist)
+            
+            wordlist.extend(self.random_wordlist(
+                string.ascii_letters[:7] + string.digits[:3],
+                size=rand_wl_size, wordlen=7
+            ))
+            
+            py_re: re.Pattern = regex_to_re(regex)
+            aut: Automata = regex_to_automata(regex)
+
+            for word in wordlist:
+                self.assertEqual(bool(py_re.fullmatch(word)), self.check_word(aut, word),
+                    f"Regex and automata should've agreed on '{word}'"
                 )
     
     @staticmethod
@@ -256,12 +282,27 @@ class AutomataTest(unittest.TestCase):
         for word in self.random_wordlist(fdfa.alphabet, size=50):
             self.assertAccepts(fdfa, word)
 
-    @unittest.skip
     def test_regex(self):
-        raise NotImplementedError("Regex-automata functionality not yet implemented")
-    
-
-
+        common_wordlist: typing.Tuple[str] = (
+            "", "a", "b", "ab", "ba", "abc", "cab", "a+b", "0", "a b",
+            "aaab", "abab", "bbba", "abba", "ac", "ca",
+        )
+        
+        self.assertCorrectRegex("0", wordlist=common_wordlist)
+        self.assertCorrectRegex("1", wordlist=common_wordlist)
+        self.assertCorrectRegex("a", wordlist=common_wordlist)
+        self.assertCorrectRegex("ab", wordlist=common_wordlist)
+        self.assertCorrectRegex("a+b", wordlist=common_wordlist)
+        self.assertCorrectRegex("a*", wordlist=common_wordlist)
+        self.assertCorrectRegex("(a)", wordlist=common_wordlist)
+        self.assertCorrectRegex("(ab)", wordlist=common_wordlist)
+        self.assertCorrectRegex("(a+b)", wordlist=common_wordlist)
+        self.assertCorrectRegex("(a)*", wordlist=common_wordlist)
+        self.assertCorrectRegex("(a*)", wordlist=common_wordlist)
+        self.assertCorrectRegex("(a + b) c", wordlist=common_wordlist)
+        self.assertCorrectRegex("(a + b)^3", wordlist=common_wordlist)
+        self.assertCorrectRegex("(a + b)*", wordlist=common_wordlist)
+        self.assertCorrectRegex("a(b*a)^2*", wordlist=common_wordlist, rand_wl_size=50)
 
 
 if __name__ == "__main__":

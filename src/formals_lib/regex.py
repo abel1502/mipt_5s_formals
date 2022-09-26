@@ -113,6 +113,9 @@ class Either(Regex):
 
 
 class Reconstructor(itree.TreeVisitor[Regex]):
+    warn_on_generic: typing.ClassVar[bool] = True
+    
+    
     class ParLevel(enum.IntEnum):
         none = 0
         either = 1
