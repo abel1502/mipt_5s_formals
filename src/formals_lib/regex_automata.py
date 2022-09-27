@@ -2,13 +2,13 @@ from __future__ import annotations
 import typing
 import dataclasses
 from collections import deque
-
+import itertools
 
 from .automata import *
 from .automata_ops import *
 from .regex import *
 from .itree import TreeVisitor
-# from .automata_determ import make_edges_1
+from .automata_determ import make_edges_1, unify_term
 
 
 class RegexToAutomataConverter(TreeVisitor[Regex]):
@@ -71,35 +71,141 @@ class RegexToAutomataConverter(TreeVisitor[Regex]):
         return result
 
 
-# TODO: Maybe implement later
-# class AutomataToRegexConverter:
-#     aut: Automata
-#     
-#     def __init__(self, aut: Automata):
-#         self.aut = make_edges_1(aut)
-#     
-#     def _convert_to_re_automata(self) -> None:
-#         # Very dirty, but works(...
-#         
-#         # Copying to avoid messing up the iteration
-#         for edge in list(self.aut.get_edges()):
-#             self.aut.unlink(edge)
-#             self.aut.link(edge.src, edge.dst, Letter(edge.label))
-#         
-#         for node in self.aut.get_nodes():
-#             self._add_loop(node)
-#     
-#     def _add_loop(self, node: Node) -> None:
-#         for edge in node.get_edges():
-#             if edge.dst is node:
-#                 return
-#         
-#         self.aut.link(node, node, Zero())
-#     
-#     def apply(self) -> Regex:
-#         while len(self.aut) > 2:
-#             self.step()
+class AutomataToRegexConverter:
+    aut: Automata
+    
+    def __init__(self, aut: Automata):
+        self.aut = aut
+    
+    def apply(self) -> Regex:
+        self._prepare()
         
+        self._merge_parallel_edges()
+        
+        while len(self.aut) > 2:
+            self._step()
+        
+        if self.aut.start.is_term and len(self.aut) == 2:
+            self._step()
+        
+        return self._finalize()
+    
+    def _prepare(self) -> None:
+        self.aut = make_edges_1(self.aut)
+        self.aut = unify_term(self.aut)
+        self.aut = trim(self.aut)
+        
+        self._convert_to_re_automata()
+    
+        # TODO: Some assertions (?)
+    
+    def _convert_to_re_automata(self) -> None:
+        # Very dirty, but works:
+        # Internally, we simply use Regex'es for
+        # automata edge labels. Have to be careful with 
+        
+        # Copying to avoid messing up the iteration
+        for edge in list(self.aut.get_edges()):
+            self.aut.unlink(edge)
+            self.aut.link(edge.src, edge.dst, Letter(edge.label))
+        
+        for node in self.aut.get_nodes():
+            self._add_loop(node)
+    
+    def _add_loop(self, node: Node) -> None:
+        for edge in node.get_edges():
+            if edge.dst is node:
+                return
+        
+        self.aut.link(node, node, Zero())
+    
+    def _get_loop(self, node: Node) -> Edge:
+        return next(
+            e for e in self.aut.get_edges()
+            if e.dst is node and e.src is node
+        )
+    
+    def _step(self) -> None:
+        target: Node = self._find_target()
+        
+        # Copying to avoid messing up the iteration
+        edges_in: typing.Iterable[Edge] = [
+            e for e in self.aut.get_edges()
+            if e.dst is target and e.src is not target
+        ]
+        
+        edges_out: typing.Iterable[Edge] = target.out
+        
+        loop_regex: Regex = Star(self._get_loop(target).label)
+        
+        for edge_in, edge_out in itertools.product(edges_in, edges_out):
+            edge_in: Edge
+            edge_out: Edge
+            
+            self.aut.link(
+                edge_in.src,
+                edge_out.dst,
+                Concat(edge_in.label, loop_regex, edge_out.label)
+            )
+        
+        self.aut.remove_node(target)
+        
+        self._merge_parallel_edges()
+    
+    def _find_target(self) -> Node:
+        # Will raise StopIteration if no targets are available,
+        # but that shouldn't occur during normal operation
+        return next(n for n in self.aut.get_nodes()
+                    if n is not self.aut.start and not n.is_term)
+    
+    def _merge_parallel_edges(self) -> None:
+        for src in self.aut.get_nodes():
+            outs: typing.Dict[Node, typing.Set[Edge]] = {}
+            
+            for edge in src.out:
+                outs.setdefault(edge.dst, set()).add(edge)
+            
+            for dst, edges in outs.items():
+                if len(edges) <= 1:
+                    continue
+                
+                self.aut.unlink_many(edges)
+                self.aut.link(src, dst, Either(*map(lambda e: e.label, edges)))
+    
+    def _finalize(self) -> Regex:
+        start: Node = self.aut.start
+        
+        if start.is_term:
+            assert len(self.aut) == 1
+            return Star(self._get_loop(start))
+        
+        if len(self.aut) == 1:
+            assert not start.is_term
+            return Zero()
+        
+        assert len(self.aut) == 2
+        assert len(self.aut.get_edges()) <= 3
+        
+        non_start: Node = next(
+            n for n in self.aut.get_nodes()
+            if n is not start
+        )
+        
+        # Shouldn't fail during normal operation
+        edge: Edge = next(start.out)
+        
+        assert not start.is_term and non_start.is_term
+        
+        return Concat(
+            Star(self._get_loop(start).label),
+            edge.label,
+            Star(self._get_loop(non_start).label),
+        )
 
+       
 def regex_to_automata(regex: Regex) -> Automata:
     return RegexToAutomataConverter().visit(regex)
+
+
+def automata_to_regex(aut: Automata) -> Regex:
+    return AutomataToRegexConverter(aut).apply()

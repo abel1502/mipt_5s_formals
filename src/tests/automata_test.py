@@ -282,7 +282,7 @@ class AutomataTest(unittest.TestCase):
         for word in self.random_wordlist(fdfa.alphabet, size=50):
             self.assertAccepts(fdfa, word)
 
-    def test_regex(self):
+    def test_regex_to_automata(self):
         common_wordlist: typing.Tuple[str] = (
             "", "a", "b", "ab", "ba", "abc", "cab", "a+b", "0", "a b",
             "aaab", "abab", "bbba", "abba", "ac", "ca",
@@ -303,6 +303,9 @@ class AutomataTest(unittest.TestCase):
         self.assertCorrectRegex("(a + b)^3", wordlist=common_wordlist)
         self.assertCorrectRegex("(a + b)*", wordlist=common_wordlist)
         self.assertCorrectRegex("a(b*a)^2*", wordlist=common_wordlist, rand_wl_size=50)
+    
+    def test_automata_to_regex(self):
+        pass  # TODO: Finish!!!!
 
 
 if __name__ == "__main__":

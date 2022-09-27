@@ -1,7 +1,4 @@
 from __future__ import annotations
-from gc import unfreeze
-from hashlib import new
-from re import A, L
 import typing
 import dataclasses
 from collections import deque
@@ -13,7 +10,7 @@ KeyType = typing.Any
 @dataclasses.dataclass
 class Node:
     key: KeyType
-    out: typing.Set["Edge"] = dataclasses.field(default_factory=lambda: set())
+    out: typing.Set["Edge"] = dataclasses.field(default_factory=set)
     is_term: bool = False
 
     def get_edges(self, *,
@@ -63,7 +60,7 @@ class Automata:
         self._edges = set()
         self.start = self.make_node()
 
-    def make_node(self, key=None, term=False) -> Node:
+    def make_node(self, key: KeyType = None, term: bool = False) -> Node:
         """
         If key is None, i is used by default
         """
@@ -117,6 +114,10 @@ class Automata:
         edge.src.out.remove(edge)
 
         return edge
+    
+    def unlink_many(self, edges: typing.Iterable[Edge]) -> None:
+        for edge in edges:
+            self.unlink(edge)
     
     def remove_node(self, node: Node) -> Node:
         self.remove_nodes([node])
@@ -188,8 +189,8 @@ class Automata:
     def __copy__(self) -> Automata:
         return self.copy()
     
-    def __deepcopy__(self) -> Automata:
-        return self.copy()
+    # def __deepcopy__(self, memo: typing.Dict) -> Automata:
+    #     return self.copy()
     
     def __len__(self) -> int:
         return len(self._nodes)
@@ -278,9 +279,3 @@ class AutomataVisitor:
     
     def popqueue(self) -> typing.Tuple[Edge | None, Node]:
         return self._queue.popleft()
-
-
-# TODO: Maybe a Transformer class?
-# class Transformer(Visitor):
-#     pass
-
