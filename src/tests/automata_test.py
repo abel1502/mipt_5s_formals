@@ -310,7 +310,22 @@ class AutomataTest(unittest.TestCase):
                 self.assertEquivRegex(regex_2, aut, wordlist=common_wordlist, rand_wl_size=25)
     
     def test_regex_2(self):
-        pass  # TODO: Finish!!!!
+        for i in range(2):
+            with self.subTest(i=i):
+                aut: Automata = getattr(self, f"aut{i}")
+                regex: Regex = automata_to_regex(aut)
+        
+                self.assertEquivRegex(regex, aut, rand_wl_size=500)
+    
+    @unittest.skip
+    def test_regex_3(self):
+        # Debugging shows that it does work, albeit slowly, with ~60 nodes
+        # and god knows how many edges. I decided to just skip the test with this one
+        
+        aut: Automata = self.aut2
+        regex: Regex = automata_to_regex(aut)
+
+        self.assertEquivRegex(regex, aut, rand_wl_size=100)
 
 
 if __name__ == "__main__":

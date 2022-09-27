@@ -131,6 +131,9 @@ class AutomataToRegexConverter:
     def _step(self) -> None:
         target: Node = self._find_target()
         
+        # print(f"> Step {target.key!r}:")
+        # print(f"    {len(self.aut)} nodes left")
+        
         # Copying to avoid messing up the iteration
         edges_in: typing.Iterable[Edge] = [
             e for e in self.aut.get_edges()
@@ -138,6 +141,8 @@ class AutomataToRegexConverter:
         ]
         
         edges_out: typing.Iterable[Edge] = target.out
+        
+        # print(f"    {len(edges_in) * len(edges_out)} edge pairs to handle")
         
         loop_regex: Regex = Star(self._get_loop(target).label)
         
