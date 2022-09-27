@@ -40,6 +40,12 @@ class RegexOptimizer(TreeVisitor[Regex]):
             
             result.append(child_regex)
         
+        if len(result) == 0:
+            return One()
+        
+        if len(result) == 1:
+            return result[0]
+        
         return Concat(*result)
 
     @itree.TreeVisitor.handler(Star)
@@ -66,6 +72,12 @@ class RegexOptimizer(TreeVisitor[Regex]):
                 continue
             
             result.add(child_regex)
+        
+        if len(result) == 0:
+            return Zero()
+        
+        if len(result) == 1:
+            return result[0]
         
         return Either(*result)
 

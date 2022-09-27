@@ -179,7 +179,7 @@ class AutomataPlusPow(BaseAutomataTransform):
 
 class AutomataTrimmer(BaseAutomataTransform):
     def apply(self) -> Automata:
-        result = self.raw_copy()
+        result: Automata = self.raw_copy()
 
         vis = AutomataVisitor()
         vis.visit(result)
