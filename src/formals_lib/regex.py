@@ -1,12 +1,13 @@
 from __future__ import annotations
-from multiprocessing import context
 import typing
 import enum
 import contextlib
+import dataclasses
 
 from . import itree
 
 
+@dataclasses.dataclass(frozen=True)
 class Regex(itree.ITree["Regex"]):
     def __add__(self, other):
         if not isinstance(other, Regex):
@@ -51,13 +52,14 @@ class Regex(itree.ITree["Regex"]):
         return True
 
 
+@dataclasses.dataclass(frozen=True)
 class Letter(Regex):
     letter: str
     
     def __init__(self, letter: str):
         assert len(letter) == 1
         
-        self.letter = letter
+        object.__setattr__(self, "letter", letter)
     
     def get_children(self) -> typing.Iterable[Regex]:
         return ()
@@ -76,11 +78,12 @@ class One(Regex):
         return ()
 
 
+@dataclasses.dataclass(frozen=True)
 class Concat(Regex):
     _children: typing.List[Regex]
     
     def __init__(self, *children: Regex):
-        self._children = children
+        object.__setattr__(self, "_children", children)
     
     def get_children(self) -> typing.Iterable[Regex]:
         return tuple(self._children)
@@ -89,11 +92,12 @@ class Concat(Regex):
 # TODO: Maybe smart Repeat for optimization?
 
 
+@dataclasses.dataclass(frozen=True)
 class Star(Regex):
     _child: Regex
     
     def __init__(self, child: Regex):
-        self._child = child
+        object.__setattr__(self, "_child", child)
     
     def get_children(self) -> typing.Iterable[Regex]:
         return (self._child,)
@@ -102,11 +106,12 @@ class Star(Regex):
 # TODO: Plus (as power)?
 
 
+@dataclasses.dataclass(frozen=True)
 class Either(Regex):
     _children: typing.List[Regex]
     
     def __init__(self, *children: Regex):
-        self._children = children
+        object.__setattr__(self, "_children", children)
     
     def get_children(self) -> typing.Iterable[Regex]:
         return tuple(self._children)

@@ -9,6 +9,7 @@ from .automata_ops import *
 from .regex import *
 from .itree import TreeVisitor
 from .automata_determ import make_edges_1, unify_term
+from .regex_optimize import optimize
 
 
 class RegexToAutomataConverter(TreeVisitor[Regex]):
@@ -88,7 +89,8 @@ class AutomataToRegexConverter:
         if self.aut.start.is_term and len(self.aut) == 2:
             self._step()
         
-        return self._finalize()
+        # return self._finalize()
+        return optimize(self._finalize())
     
     def _prepare(self) -> None:
         self.aut = make_edges_1(self.aut)
@@ -107,13 +109,14 @@ class AutomataToRegexConverter:
         # Copying to avoid messing up the iteration
         for edge in list(self.aut.get_edges()):
             self.aut.unlink(edge)
-            self.aut.link(edge.src, edge.dst, Letter(edge.label))
+            regex: Regex = Letter(edge.label) if edge.label else One()
+            self.aut.link(edge.src, edge.dst, regex)
         
         for node in self.aut.get_nodes():
             self._add_loop(node)
     
     def _add_loop(self, node: Node) -> None:
-        for edge in node.get_edges():
+        for edge in node.out:
             if edge.dst is node:
                 return
         
@@ -138,15 +141,22 @@ class AutomataToRegexConverter:
         
         loop_regex: Regex = Star(self._get_loop(target).label)
         
+        to_link: typing.List[typing.Tuple[Node, Node, Regex]] = []
+        
         for edge_in, edge_out in itertools.product(edges_in, edges_out):
             edge_in: Edge
             edge_out: Edge
             
-            self.aut.link(
+            # To avoid messing up the iterables
+            to_link.append((
                 edge_in.src,
                 edge_out.dst,
                 Concat(edge_in.label, loop_regex, edge_out.label)
-            )
+            ))
+        
+        # TODO: This, apparently, may include target as src or dst!
+        for src, dst, label in to_link:
+            self.aut.link(src, dst, label)
         
         self.aut.remove_node(target)
         
@@ -177,7 +187,7 @@ class AutomataToRegexConverter:
         
         if start.is_term:
             assert len(self.aut) == 1
-            return Star(self._get_loop(start))
+            return Star(self._get_loop(start).label)
         
         if len(self.aut) == 1:
             assert not start.is_term
@@ -192,7 +202,7 @@ class AutomataToRegexConverter:
         )
         
         # Shouldn't fail during normal operation
-        edge: Edge = next(start.out)
+        edge: Edge = next(e for e in start.out if e.dst is non_start)
         
         assert not start.is_term and non_start.is_term
         

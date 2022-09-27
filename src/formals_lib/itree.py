@@ -56,6 +56,7 @@ class TreeVisitor(typing.Generic[T]):
         
         if self.warn_on_generic:
             warnings.warn(f"Handler for {type(node).__qualname__} not specified, defaulting to iterating over children")
+            assert False, "Comment this out if you don't want to be THIS pedantic"
 
         return self.generic_visit(node)
     

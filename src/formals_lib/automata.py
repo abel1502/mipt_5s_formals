@@ -13,16 +13,16 @@ class Node:
     out: typing.Set["Edge"] = dataclasses.field(default_factory=set)
     is_term: bool = False
 
-    def get_edges(self, *,
-                  label_full:  str | None = None,
-                  label_start: str | None = None) -> typing.Generator[Edge, None, None]:
-        raise NotImplementedError()
+    # def get_edges(self, *,
+    #               label_full:  str | None = None,
+    #               label_start: str | None = None) -> typing.Generator[Edge, None, None]:
+    #     raise NotImplementedError()
     
-    def get_unique_edge(self, *,
-                        label_full:  str | None = None,
-                        label_start: str | None = None,
-                        or_none: bool = True) -> Edge | None:
-        raise NotImplementedError()
+    # def get_unique_edge(self, *,
+    #                     label_full:  str | None = None,
+    #                     label_start: str | None = None,
+    #                     or_none: bool = True) -> Edge | None:
+    #     raise NotImplementedError()
     
     def is_deterministic(self) -> bool:
         return all(len(e) == 1 for e in self.out) and len(set(map(lambda x: x.label, self.out))) == len(self.out)
