@@ -320,7 +320,8 @@ class AutomataTest(unittest.TestCase):
     @unittest.skip
     def test_regex_3(self):
         # Debugging shows that it does work, albeit slowly, with ~60 nodes
-        # and god knows how many edges. I decided to just skip the test with this one
+        # and god knows how many edges. It appears to have issues related to
+        # memory usage. I decided to just skip the test with this one
         
         aut: Automata = self.aut2
         regex: Regex = automata_to_regex(aut)
