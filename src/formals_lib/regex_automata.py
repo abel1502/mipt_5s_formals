@@ -15,6 +15,24 @@ from .regex_optimize import optimize
 class RegexToAutomataConverter(TreeVisitor[Regex]):
     warn_on_generic: typing.ClassVar[bool] = True
     
+    _alphabet: str | None
+    
+    
+    def __init__(self, alphabet: str | None = None):
+        super().__init__()
+        
+        self._alphabet = alphabet
+    
+    def apply(self, regex: Regex) -> Automata:
+        result: Automata = self.visit(regex)
+        
+        if self._alphabet is not None:
+            assert set(result.alphabet).issubset(set(self._alphabet)), "Unspecified alphabet used!"
+            
+            result.alphabet = self._alphabet
+        
+        return result
+    
     @TreeVisitor.handler(Letter)
     def visit_letter(self, node: Letter) -> Automata:
         result = Automata(node.letter)
@@ -218,8 +236,8 @@ class AutomataToRegexConverter:
         )
 
        
-def regex_to_automata(regex: Regex) -> Automata:
-    return RegexToAutomataConverter().visit(regex)
+def regex_to_automata(regex: Regex, alphabet: str | None = None) -> Automata:
+    return RegexToAutomataConverter(alphabet=alphabet).apply(regex)
 
 
 def automata_to_regex(aut: Automata) -> Regex:

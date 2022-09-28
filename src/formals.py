@@ -7,6 +7,7 @@ import pathlib
 from collections import UserDict
 
 from formals_lib import *
+from formals_lib import automata_minimize
 from formals_lib.automata import KeyType
 
 
@@ -30,6 +31,7 @@ class Namer(UserDict):
     def __missing__(self, key: KeyType) -> int:
         result: int = self._next_id
         self._next_id += 1
+        self[key] = result
         return result
 
 
@@ -66,9 +68,20 @@ def main():
     
     output_dir: typing.Final[pathlib.Path] = pathlib.Path(__file__).parent.parent / "output"
 
-    # solve_task_1(output_dir)
-    # solve_task_2(output_dir)
-    # solve_task_3(output_dir)
+    solve_task_1(output_dir)
+    solve_task_2(output_dir)
+    solve_task_3(output_dir)
+    
+    # automata_dot.dump(
+    #     automata_minimize.minimize(
+    #         regex_automata.regex_to_automata(
+    #             regex_parser.parse(
+    #                 "(a+b+ab)*"
+    #             )
+    #         )
+    #     ),
+    #     output_dir / "tmp.svg"
+    # )
 
     return 0
 

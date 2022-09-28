@@ -1,4 +1,5 @@
 from __future__ import annotations
+from operator import or_
 import typing
 import dataclasses
 from collections import deque
@@ -23,6 +24,22 @@ class Node:
     #                     label_start: str | None = None,
     #                     or_none: bool = True) -> Edge | None:
     #     raise NotImplementedError()
+    
+    def get_only_edge(self, label: str, *, or_none: bool = False) -> "Edge" | None:
+        result: Edge | None = None
+        
+        for edge in self.out:
+            if edge.label != label:
+                continue
+            if result is not None:
+                raise LookupError("Duplicate edge with fitting label")
+            
+            result = edge
+        
+        if result is None and not or_none:
+            raise LookupError("Edge not found")
+        
+        return result
     
     def is_deterministic(self) -> bool:
         return all(len(e) == 1 for e in self.out) and len(set(map(lambda x: x.label, self.out))) == len(self.out)
@@ -128,6 +145,7 @@ class Automata:
 
         for node in nodes:
             assert node in self._nodes
+            assert node is not self.start, "Cannot remove the start node"
             self._nodes.remove(node)
 
         # Copying to avoid messing up the iteration
