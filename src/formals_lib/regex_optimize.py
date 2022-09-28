@@ -77,7 +77,7 @@ class RegexOptimizer(TreeVisitor[Regex]):
             return Zero()
         
         if len(result) == 1:
-            return result[0]
+            return next(iter(result))
         
         return Either(*result)
 
