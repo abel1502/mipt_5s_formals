@@ -12,6 +12,7 @@ import utils
 from formals_lib.automata import *
 from formals_lib.automata_ops import *
 from formals_lib.automata_determ import *
+from formals_lib.automata_minimize import *
 from formals_lib.regex_automata import *
 from formals_lib.regex_parser import parse
 
@@ -327,6 +328,16 @@ class AutomataTest(unittest.TestCase):
         regex: Regex = automata_to_regex(aut)
 
         self.assertEquivRegex(regex, aut, rand_wl_size=100)
+    
+    def test_minimize(self):
+        for i in range(3):
+            with self.subTest(i=i):
+                aut: Automata = getattr(self, f"aut{i}")
+                min_aut: Automata = minimize(aut)
+        
+                self.assertEquivAutomatas(
+                    aut, min_aut, self.basic_wordlist, rand_wl_size=100
+                )
 
 
 if __name__ == "__main__":
