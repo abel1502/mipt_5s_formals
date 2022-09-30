@@ -191,6 +191,3 @@ class Reconstructor(itree.TreeVisitor[Regex]):
 def reconstruct(regex: Regex) -> str:
     return Reconstructor().visit(regex)
 
-
-
-
