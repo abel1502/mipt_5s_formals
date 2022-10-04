@@ -9,7 +9,7 @@ from .automata_ops import *
 from .regex import *
 from .itree import TreeVisitor
 from .automata_determ import make_edges_1, unify_term
-from .regex_optimize import optimize
+from .regex_optimize import optimize_regex
 
 
 class RegexToAutomataConverter(TreeVisitor[Regex]):
@@ -66,13 +66,13 @@ class RegexToAutomataConverter(TreeVisitor[Regex]):
         
         result: Automata = self.visit(next(children))
         for child in children:
-            result = concat(result, self.visit(child))
+            result = aut_concat(result, self.visit(child))
         
         return result
 
     @TreeVisitor.handler(Star)
     def visit_star(self, node: Star) -> Automata:
-        return star(self.visit(node.get_children()[0]))
+        return aut_star(self.visit(node.get_children()[0]))
 
     @TreeVisitor.handler(Either)
     def visit_either(self, node: Either) -> Automata:
@@ -85,7 +85,7 @@ class RegexToAutomataConverter(TreeVisitor[Regex]):
         
         result: Automata = self.visit(next(children))
         for child in children:
-            result = join(result, self.visit(child))
+            result = aut_join(result, self.visit(child))
         
         return result
 
@@ -108,12 +108,12 @@ class AutomataToRegexConverter:
             self._step()
         
         # return self._finalize()
-        return optimize(self._finalize())
+        return optimize_regex(self._finalize())
     
     def _prepare(self) -> None:
         self.aut = make_edges_1(self.aut)
         self.aut = unify_term(self.aut)
-        self.aut = trim(self.aut)
+        self.aut = aut_trim(self.aut)
         
         self._convert_to_re_automata()
     
@@ -242,3 +242,8 @@ def regex_to_automata(regex: Regex, alphabet: str | None = None) -> Automata:
 
 def automata_to_regex(aut: Automata) -> Regex:
     return AutomataToRegexConverter(aut).apply()
+
+
+__all__ = [
+    "regex_to_automata", "automata_to_regex",
+]

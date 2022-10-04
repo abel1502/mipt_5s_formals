@@ -70,7 +70,12 @@ class AutomataDotDumper:
         )
 
 
-def dump(aut: Automata, file: pathlib.Path | str, fmt="svg", key_repr: typing.Callable[[typing.Any], str] = str, **kwargs):
+def dump_automata(aut: Automata, file: pathlib.Path | str, fmt="svg", key_repr: typing.Callable[[typing.Any], str] = str, **kwargs):
     dumper = AutomataDotDumper(key_repr=key_repr)
     dumper.process(aut)
     dumper.render_graph(file, fmt=fmt, **kwargs)
+
+
+__all__ = [
+    "dump_automata",
+]

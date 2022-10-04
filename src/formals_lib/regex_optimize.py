@@ -9,19 +9,19 @@ class RegexOptimizer(TreeVisitor[Regex]):
     warn_on_generic: typing.ClassVar[bool] = True
     
 
-    @itree.TreeVisitor.handler(Letter)
+    @TreeVisitor.handler(Letter)
     def visit_letter(self, node: Letter) -> Regex:
         return node
     
-    @itree.TreeVisitor.handler(Zero)
+    @TreeVisitor.handler(Zero)
     def visit_zero(self, node: Zero) -> Regex:
         return node
     
-    @itree.TreeVisitor.handler(One)
+    @TreeVisitor.handler(One)
     def visit_one(self, node: One) -> Regex:
         return node
     
-    @itree.TreeVisitor.handler(Concat)
+    @TreeVisitor.handler(Concat)
     def visit_concat(self, node: Concat) -> Regex:
         result: typing.List[Regex] = []
 
@@ -48,7 +48,7 @@ class RegexOptimizer(TreeVisitor[Regex]):
         
         return Concat(*result)
 
-    @itree.TreeVisitor.handler(Star)
+    @TreeVisitor.handler(Star)
     def visit_star(self, node: Star) -> Regex:
         child_regex: Regex = self.visit(node.get_children()[0])
         
@@ -57,7 +57,7 @@ class RegexOptimizer(TreeVisitor[Regex]):
         
         return Star(child_regex)
 
-    @itree.TreeVisitor.handler(Either)
+    @TreeVisitor.handler(Either)
     def visit_either(self, node: Either) -> Regex:
         result: typing.Set[Regex] = set()
 
@@ -82,5 +82,10 @@ class RegexOptimizer(TreeVisitor[Regex]):
         return Either(*result)
 
 
-def optimize(regex: Regex) -> Regex:
+def optimize_regex(regex: Regex) -> Regex:
     return RegexOptimizer().visit(regex)
+
+
+__all__ = [
+    "optimize_regex",
+]

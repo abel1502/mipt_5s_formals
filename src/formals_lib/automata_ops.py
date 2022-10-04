@@ -194,28 +194,34 @@ class AutomataTrimmer(BaseAutomataTransform):
         return result
 
 
-def concat(aut1: Automata, aut2: Automata) -> Automata:
+def aut_concat(aut1: Automata, aut2: Automata) -> Automata:
     return AutomataConcat(aut1, aut2).apply()
 
 
-def join(aut1: Automata, aut2: Automata) -> Automata:
+def aut_join(aut1: Automata, aut2: Automata) -> Automata:
     return AutomataJoin(aut1, aut2).apply()
 
 
-def intersect(aut1: Automata, aut2: Automata) -> Automata:
+def aut_intersect(aut1: Automata, aut2: Automata) -> Automata:
     return AutomataIntersect(aut1, aut2).apply()
 
 
-def star(aut: Automata) -> Automata:
+def aut_star(aut: Automata) -> Automata:
     return AutomataStar(aut).apply()
 
 
-def pow_plus(aut: Automata) -> Automata:
+def aut_pow_plus(aut: Automata) -> Automata:
     return AutomataPlusPow(aut).apply()
 
 
-def trim(aut: Automata) -> Automata:
+def aut_trim(aut: Automata) -> Automata:
     return AutomataTrimmer(aut).apply()
 
 
 # AutomataComplement and complement() are implemented in a separate file, since they rely on make_full_dfa()
+
+
+__all__ = [
+    "BaseAutomataBinOp", "BaseAutomataTransform",
+    "aut_concat", "aut_join", "aut_intersect", "aut_star", "aut_pow_plus", "aut_trim",
+]

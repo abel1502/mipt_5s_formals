@@ -17,3 +17,8 @@ class AutomataComplement(MakeFullDFA):
 
 def complement(aut: Automata) -> Automata:
     return AutomataComplement(aut).apply()
+
+
+__all__ = [
+    "complement",
+]

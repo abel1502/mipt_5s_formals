@@ -188,6 +188,11 @@ class Reconstructor(itree.TreeVisitor[Regex]):
         return result
     
 
-def reconstruct(regex: Regex) -> str:
+def reconstruct_regex(regex: Regex) -> str:
     return Reconstructor().visit(regex)
 
+
+__all__ = [
+    "Regex", "Letter", "Zero", "One", "Concat", "Star", "Either",
+    "reconstruct_regex",
+]

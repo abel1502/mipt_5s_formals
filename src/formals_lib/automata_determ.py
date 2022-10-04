@@ -140,8 +140,8 @@ class MakeDeterministic(BaseAutomataTransform):
             return self.aut.copy()  # TODO: Maybe not copy?
 
         # We'll use that for our guideline, not the result
-        self.aut = MakeEdges1(self.aut).apply()
-        self.aut = AutomataTrimmer(self.aut).apply()
+        self.aut = make_edges_1(self.aut)
+        self.aut = aut_trim(self.aut)
 
         result = Automata(self.aut.alphabet)
 
@@ -204,7 +204,7 @@ class MakeFullDFA(MakeDeterministic):
             for letter in missing_alphabet:
                 result.link(node, end, letter)
         
-        return trim(result)
+        return aut_trim(result)
 
 
 def make_edges_01(aut: Automata) -> Automata:
@@ -225,3 +225,8 @@ def make_dfa(aut: Automata) -> Automata:
 
 def make_full_dfa(aut: Automata) -> Automata:
     return MakeFullDFA(aut).apply()
+
+
+__all__ = [
+    "make_edges_01", "make_edges_1", "unify_term", "make_dfa", "make_full_dfa",
+]

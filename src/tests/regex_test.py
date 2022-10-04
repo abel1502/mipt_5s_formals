@@ -23,9 +23,9 @@ class RegexTest(unittest.TestCase):
             regex.Letter("d")
         )
 
-        self.regex1 = regex_parser.parse("a(b+c)*d")
+        self.regex1 = regex_parser.parse_regex("a(b+c)*d")
 
-        self.regex2 = regex_parser.parse("a((b+1)^2d)*")
+        self.regex2 = regex_parser.parse_regex("a((b+1)^2d)*")
 
     def test_compare(self):
         self.assertEqual(self.regex1_tree, self.regex1)
@@ -33,8 +33,8 @@ class RegexTest(unittest.TestCase):
         self.assertNotEqual(self.regex1, self.regex2)
 
     def test_parse_reconstruct(self):
-        parse = regex_parser.parse
-        reconstruct = regex.reconstruct
+        parse = regex_parser.parse_regex
+        reconstruct = regex.reconstruct_regex
         parse_back = lambda src: reconstruct(parse(src))
 
         self.assertEqual(parse("0"), regex.Zero())

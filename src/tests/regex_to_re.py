@@ -1,9 +1,12 @@
 from __future__ import annotations
 import typing
 import re
+from formals_lib.regex import Reconstructor
 
 import utils
 from formals_lib.regex import *
+from formals_lib.regex import Reconstructor
+from formals_lib.itree import TreeVisitor
 
 
 # Not the best practive, but we'll reuse the reconstructor's code this way
@@ -14,19 +17,19 @@ class RegexToRe(Reconstructor):
     def apply(self, regex: Regex) -> re.Pattern:
         return re.compile(self.visit(regex))
     
-    @itree.TreeVisitor.handler(Letter)
+    @TreeVisitor.handler(Letter)
     def visit_letter(self, node: Letter) -> str:
         return node.letter
     
-    @itree.TreeVisitor.handler(Zero)
+    @TreeVisitor.handler(Zero)
     def visit_zero(self, node: Zero) -> str:
         return "(?!)"
     
-    @itree.TreeVisitor.handler(One)
+    @TreeVisitor.handler(One)
     def visit_one(self, node: One) -> str:
         return ""
     
-    @itree.TreeVisitor.handler(Concat)
+    @TreeVisitor.handler(Concat)
     def visit_concat(self, node: Concat) -> str:
         result: typing.List[str] = []
 
@@ -40,12 +43,12 @@ class RegexToRe(Reconstructor):
         
         return result
 
-    @itree.TreeVisitor.handler(Star)
+    @TreeVisitor.handler(Star)
     def visit_star(self, node: Star) -> str:
         with self._set_par_level(self.ParLevel.concat):
             return self.visit(node.get_children()[0]) + "*"
 
-    @itree.TreeVisitor.handler(Either)
+    @TreeVisitor.handler(Either)
     def visit_either(self, node: Either) -> str:
         result: typing.List[str] = []
 

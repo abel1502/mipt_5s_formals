@@ -1,5 +1,4 @@
 from __future__ import annotations
-from operator import or_
 import typing
 import dataclasses
 from collections import deque
@@ -299,3 +298,8 @@ class AutomataVisitor:
     
     def popqueue(self) -> typing.Tuple[Edge | None, Node]:
         return self._queue.popleft()
+
+
+__all__ = [
+    "KeyType", "Node", "Edge", "Automata", "AutomataVisitor",
+]

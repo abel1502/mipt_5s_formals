@@ -201,5 +201,10 @@ class RegexParser:
         return result
 
 
-def parse(src: str | io.TextIOBase) -> regex.Regex:
+def parse_regex(src: str | io.TextIOBase) -> regex.Regex:
     return RegexParser(src).parse()
+
+
+__all__ = [
+    "RegexSyntaxError", "parse_regex",
+]

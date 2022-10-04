@@ -140,3 +140,8 @@ class AutomataMinimizer(BaseAutomataTransform):
 
 def minimize(aut: Automata) -> Automata:
     return AutomataMinimizer(aut).apply()
+
+
+__all__ = [
+    "minimize",
+]
