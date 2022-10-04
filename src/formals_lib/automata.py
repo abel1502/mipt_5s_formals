@@ -136,14 +136,16 @@ class Automata:
         for edge in edges:
             self.unlink(edge)
     
-    def remove_node(self, node: Node) -> Node:
+    def remove_node(self, node: Node | KeyType) -> Node:
         self.remove_nodes([node])
         return Node
     
-    def remove_nodes(self, nodes: typing.Iterable[Node]) -> None:
+    def remove_nodes(self, nodes: typing.Iterable[Node | KeyType]) -> None:
         nodes: typing.Set[Node] = set(nodes)
 
         for node in nodes:
+            if not isinstance(node, Node):
+                node = self.node(node)
             assert node in self._nodes
             assert node is not self.start, "Cannot remove the start node"
             self._nodes.remove(node)
