@@ -9,3 +9,4 @@ from .regex_automata import *
 from .automata_complement import *
 from .automata_minimize import *
 from .regex_optimize import *
+from .automata_cmp import *
