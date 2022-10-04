@@ -134,9 +134,10 @@ def solve_task_4_3(output_dir: pathlib.Path):
     # aut2.link(2, 2, "ba")
     # aut2.link(2, 0, "")
     
-    # aut2 = formals.minimize(aut2)
+    # aut2 = formals.minimize_aut(aut2)
     
     # dump(aut2, output_dir, (4, 3, "alt"))
+    
 
 
 def solve_task_4_4(output_dir: pathlib.Path):
