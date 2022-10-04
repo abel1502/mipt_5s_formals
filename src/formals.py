@@ -8,7 +8,6 @@ from collections import UserDict
 import itertools
 
 from formals_lib import *
-from formals_lib.automata import KeyType
 
 
 parser = argparse.ArgumentParser(
@@ -28,24 +27,37 @@ class Namer(UserDict):
         
         self._next_id = 0
     
-    def __missing__(self, key: KeyType) -> int:
+    def __missing__(self, key: automata.KeyType) -> int:
         result: int = self._next_id
         self._next_id += 1
         self[key] = result
         return result
 
 
-def dump(aut: automata.Automata, output_dir: pathlib.Path, task_id: typing.Iterable[typing.Any]) -> None:
+def _task_file_name(output_dir: pathlib.Path, task_id: typing.Iterable[typing.Any], ext: str) -> pathlib.Path:
     if isinstance(task_id, str):
         raise TypeError("task_id must be a sequence, str would be interpreted as a sequence of chars")
     
+    return (
+        output_dir / "task-{}.svg".format(
+            '-'.join(map(str, task_id))
+        )
+    ).with_suffix("." + ext)
+
+
+def dump(aut: automata.Automata, output_dir: pathlib.Path, task_id: typing.Iterable[typing.Any]) -> None:
     namer = Namer()
     
     automata_dot.dump(
         aut,
-        output_dir / "task-{}.svg".format('-'.join(map(str, task_id))),
+        _task_file_name(output_dir, task_id, "svg"),
         key_repr=lambda k: namer[k]
     )
+
+
+def dump_regex(re: regex.Regex, output_dir: pathlib.Path, task_id: typing.Iterable[typing.Any]) -> None:
+    with open(_task_file_name(output_dir, task_id, "txt"), "w") as f:
+        print(regex.reconstruct(re), file=f)
 
 
 def solve_task_3_1(output_dir: pathlib.Path):
@@ -93,27 +105,101 @@ def solve_task_4_1(output_dir: pathlib.Path):
     dump(aut, output_dir, (4, 1))
 
 
+def solve_task_4_2(output_dir: pathlib.Path):
+    re = regex_parser.parse("a((ba)*a(ab)*+a)*")
+    aut: automata.Automata = regex_automata.regex_to_automata(re)
+    aut = automata_minimize.minimize(aut)
+    
+    dump(aut, output_dir, (4, 2))
+
+
+def solve_task_4_3(output_dir: pathlib.Path):
+    # NOTE: The last ^+ is missing, becuse it's not supported!
+    re = regex_parser.parse("(a(ab+ba)*b(a+ba)*)")
+    aut: automata.Automata = regex_automata.regex_to_automata(re)
+    aut = automata_ops.pow_plus(aut)
+    aut = automata_minimize.minimize(aut)
+    
+    dump(aut, output_dir, (4, 3))
+    
+    # TODO: If nodes are made with keys overlapping the next id, everything goes haywire
+    # aut2 = automata.Automata("ab")
+    # aut2.make_node(1)
+    # aut2.make_node(2, term=True)
+    
+    # aut2.link(0, 1, "a")
+    # aut2.link(1, 1, "ab")
+    # aut2.link(1, 1, "ba")
+    # aut2.link(1, 2, "b")
+    # aut2.link(2, 2, "a")
+    # aut2.link(2, 2, "ba")
+    # aut2.link(2, 0, "")
+    
+    # aut2 = automata_minimize.minimize(aut2)
+    
+    # dump(aut2, output_dir, (4, 3, "alt"))
+
+
+def solve_task_4_4(output_dir: pathlib.Path):
+    aut = automata.Automata("ab")
+    aut.make_node(key=(0, 0), term=True)
+    aut.make_node(key=(0, 1), term=True)
+    aut.make_node(key=(1, 0))
+    aut.make_node(key=(1, 1))
+    
+    aut.set_start((0, 0))
+    aut.remove_node(0)
+    
+    for i in range(2):
+        aut.link((i, 0), (i, 1), "a")
+        aut.link((i, 0), (i, 0), "b")
+        aut.link((i, 1), (1 - i, 1), "a")
+        aut.link((i, 1), (i, 0), "b")
+    
+    dump(aut, output_dir, (4, 4, "aut"))
+    re = regex_automata.automata_to_regex(aut)
+    re = regex_optimize.optimize(re)
+    dump_regex(re, output_dir, (4, 4))
+
+
+def solve_task_4_5(output_dir: pathlib.Path):
+    # NOTE: The last ^+ is missing, becuse it's not supported!
+    re = regex_parser.parse("(a(ab+ba)*b(a+ba)*)")
+    aut: automata.Automata = regex_automata.regex_to_automata(re)
+    aut = automata_complement.complement(aut)
+    
+    re = regex_automata.automata_to_regex(aut)
+    re = regex_optimize.optimize(re)
+    dump_regex(re, output_dir, (4, 5))
+
+
+def solve_task_4_6(output_dir: pathlib.Path):
+    re = regex_parser.parse("a((ba)*a(ab)*+a)*")
+    aut: automata.Automata = regex_automata.regex_to_automata(re)
+    aut = automata_ops.pow_plus(aut)
+    aut = automata_complement.complement(aut)
+    
+    re = regex_automata.automata_to_regex(aut)
+    re = regex_optimize.optimize(re)
+    dump_regex(re, output_dir, (4, 6))
+
+
+
 def main():
     args = parser.parse_args()
     
-    output_dir: typing.Final[pathlib.Path] = pathlib.Path(__file__).parent.parent / "output"
+    output_dir: typing.Final[pathlib.Path] = pathlib.Path(__file__).parent / "output"
     output_dir.mkdir(exist_ok=True)
 
     # solve_task_3_1(output_dir)
     # solve_task_3_2(output_dir)
     # solve_task_3_3(output_dir)
-    solve_task_4_1(output_dir)
-    
-    # automata_dot.dump(
-    #     automata_minimize.minimize(
-    #         regex_automata.regex_to_automata(
-    #             regex_parser.parse(
-    #                 "(a+b+ab)*"
-    #             )
-    #         )
-    #     ),
-    #     output_dir / "tmp.svg"
-    # )
+    # solve_task_4_1(output_dir)
+    # solve_task_4_2(output_dir)
+    # solve_task_4_3(output_dir)
+    # solve_task_4_4(output_dir)
+    # solve_task_4_5(output_dir)
+    solve_task_4_6(output_dir)
 
     return 0
 
