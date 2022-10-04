@@ -7,6 +7,7 @@ import random
 import string
 import itertools
 import re
+import sys
 
 import utils
 from formals_lib.regex import *
@@ -16,6 +17,7 @@ from formals_lib.automata_determ import *
 from formals_lib.automata_minimize import *
 from formals_lib.regex_automata import *
 from formals_lib.regex_parser import parse_regex
+from formals_lib.automata_cmp import compare_automatas
 
 from regex_to_re import regex_to_re
 
@@ -31,6 +33,8 @@ class AutomataTest(unittest.TestCase):
     aut1: Automata
     aut2: Automata
     basic_wordlist: typing.Final[typing.Tuple[str]]
+    
+    verbose_aut2: typing.Final[bool] = False
 
 
     @staticmethod
@@ -194,11 +198,12 @@ class AutomataTest(unittest.TestCase):
             label: str = AutomataTest.random_word(alphabet, wordlen=2)
             aut.link(i, j, label)
         
-        avg_edge_len: typing.Final[float] = sum(len(e) for e in aut.get_edges()) / edge_cnt
+        if AutomataTest.verbose_aut2:
+            avg_edge_len: typing.Final[float] = sum(len(e) for e in aut.get_edges()) / edge_cnt
 
-        print("\nAut2 stats:")
-        for name in ("node_cnt", "term_chance", "edge_cnt", "avg_edge_len"):
-            print("    {name} = {value}".format(name=name, value=locals()[name]))
+            print("\nAut2 stats:")
+            for name in ("node_cnt", "term_chance", "edge_cnt", "avg_edge_len"):
+                print("    {name} = {value}".format(name=name, value=locals()[name]))
 
         random.setstate(rand_state)
 
@@ -339,6 +344,27 @@ class AutomataTest(unittest.TestCase):
                 self.assertEquivAutomatas(
                     aut, min_aut, self.basic_wordlist, rand_wl_size=100
                 )
+    
+    def test_cmp(self):
+        self.assertTrue(compare_automatas(self.aut0, self.aut0))
+        self.assertTrue(compare_automatas(self.aut1, self.aut1))
+        self.assertTrue(compare_automatas(self.aut2, self.aut2))
+        
+        self.assertFalse(compare_automatas(self.aut0, self.aut1))
+        self.assertFalse(compare_automatas(self.aut2, self.aut1))
+        
+        regexes: typing.Final[typing.Tuple[Regex, ...]] = (
+            "0", "1", "a", "ab", "a+b", "a*", "(a)", "(ab)", "(a+b)",
+            "(a)*", "(a*)", "(a + b) c", "(a + b)^3", "(a + b)*",
+            "a(b*a)^2*",
+        )
+        
+        for regex in regexes:
+            with self.subTest(regex=regex):
+                aut = regex_to_automata(regex)
+                aut2 = regex_to_automata(automata_to_regex(aut))
+                
+                self.assertTrue(compare_automatas(aut, aut2))
 
 
 if __name__ == "__main__":

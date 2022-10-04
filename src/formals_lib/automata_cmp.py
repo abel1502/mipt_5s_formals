@@ -16,7 +16,7 @@ class AutomataComparator:
         self._visited = set()
         self._queue = deque()
         
-        self._queue.append((aut1.start, aut2.start))
+        self._queue.append((self._auts[0].start, self._auts[1].start))
     
     def compare(self) -> bool:
         while self._queue:
@@ -34,6 +34,8 @@ class AutomataComparator:
                 edge2 = node2.get_only_edge(edge1.label)
                 
                 self._queue.append((edge1.dst, edge2.dst))
+        
+        return True
 
 
 def compare_automatas(aut1: Automata, aut2: Automata) -> bool:

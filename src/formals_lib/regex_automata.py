@@ -10,6 +10,7 @@ from .regex import *
 from .itree import TreeVisitor
 from .automata_determ import make_edges_1, unify_term
 from .regex_optimize import optimize_regex
+from .regex_parser import parse_regex
 
 
 class RegexToAutomataConverter(TreeVisitor[Regex]):
@@ -236,7 +237,9 @@ class AutomataToRegexConverter:
         )
 
        
-def regex_to_automata(regex: Regex, alphabet: str | None = None) -> Automata:
+def regex_to_automata(regex: Regex | str, alphabet: str | None = None) -> Automata:
+    if isinstance(regex, str):
+        regex = parse_regex(regex)
     return RegexToAutomataConverter(alphabet=alphabet).apply(regex)
 
 
