@@ -46,6 +46,9 @@ class Node:
     def __hash__(self) -> int:
         # It's certainly fine here, since we never consider nodes 'equal'
         return id(self)
+    
+    def __eq__(self, other) -> bool:
+        return self is other
 
 
 # TODO: ?

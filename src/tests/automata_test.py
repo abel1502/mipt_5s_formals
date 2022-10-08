@@ -214,7 +214,7 @@ class AutomataTest(unittest.TestCase):
         self.aut1 = self.define_aut1()
         self.aut2 = self.define_aut2()
 
-        self.basic_wordlist = ("", "a", "aaa", "acb")
+        self.basic_wordlist = ("", "a", "aaa", "acb", "cammm")
 
     def test_basic(self):
         self.assertAccepts(self.aut0, "")
@@ -340,7 +340,7 @@ class AutomataTest(unittest.TestCase):
             with self.subTest(i=i):
                 aut: Automata = getattr(self, f"aut{i}")
                 min_aut: Automata = minimize(aut)
-        
+                
                 self.assertEquivAutomatas(
                     aut, min_aut, self.basic_wordlist, rand_wl_size=100
                 )

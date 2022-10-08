@@ -37,6 +37,7 @@ class AutomataMinimizer(BaseAutomataTransform):
     
     def __init__(self, aut: Automata):
         super().__init__(make_full_dfa(aut))
+        del aut  # To avoid using it accidentally
         
         self._class_table = [
             [int(node.is_term) for node in self.aut.get_nodes()],
@@ -94,20 +95,23 @@ class AutomataMinimizer(BaseAutomataTransform):
         return self.cur_table == self.prev_table
     
     def step(self):
-        for letter in self.aut.alphabet:
-            self._step_idx += 1
-            
-            prev_table: typing.List[int] = self.prev_table
-            letter_table: typing.List[int] = [
+        self._step_idx += 1
+        
+        prev_table: typing.List[int] = self.prev_table
+        
+        letter_table: typing.List[typing.Tuple[int, ...]] = [
+            tuple(
                 prev_table[self.transition(i, letter)]
-                for i in range(self.nodes_cnt)
-            ]
-            
-            cur_table: typing.List[int] = self.cur_table
-            
-            mapper = _ClassMapper()
-            for i, cls in enumerate(zip(prev_table, letter_table)):
-                cur_table[i] = mapper[cls]
+                for letter in self.aut.alphabet
+            )
+            for i in range(self.nodes_cnt)
+        ]
+        
+        cur_table: typing.List[int] = self.cur_table
+        
+        mapper = _ClassMapper()
+        for i, cls in enumerate(zip(prev_table, letter_table)):
+            cur_table[i] = mapper[cls]
     
     def make_automata(self) -> Automata:
         result: Automata = Automata(self.aut.alphabet)

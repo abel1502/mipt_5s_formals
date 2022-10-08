@@ -184,7 +184,6 @@ def solve_task_4_6(output_dir: pathlib.Path):
     dump_regex(re, output_dir, (4, 6))
 
 
-
 def main():
     args = parser.parse_args()
     
@@ -199,7 +198,7 @@ def main():
     # solve_task_4_3(output_dir)
     # solve_task_4_4(output_dir)
     # solve_task_4_5(output_dir)
-    solve_task_4_6(output_dir)
+    # solve_task_4_6(output_dir)
 
     return 0
 
