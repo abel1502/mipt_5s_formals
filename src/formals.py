@@ -44,13 +44,18 @@ def _task_file_name(output_dir: pathlib.Path, task_id: typing.Iterable[typing.An
     ).with_suffix("." + ext)
 
 
-def dump(aut: formals.Automata, output_dir: pathlib.Path, task_id: typing.Iterable[typing.Any]) -> None:
-    namer = Namer()
+def dump(aut: formals.Automata,
+         output_dir: pathlib.Path,
+         task_id: typing.Iterable[typing.Any],
+         key_repr: typing.Callable[[typing.Any], str] | None = None) -> None:
+    if key_repr is None:
+        namer = Namer()
+        key_repr = lambda k: namer[k]
     
     formals.dump_automata(
         aut,
         _task_file_name(output_dir, task_id, "svg"),
-        key_repr=lambda k: namer[k]
+        key_repr=key_repr
     )
 
 
@@ -184,6 +189,69 @@ def solve_task_4_6(output_dir: pathlib.Path):
     dump_regex(re, output_dir, (4, 6))
 
 
+def solve_test_1_1(output_dir: pathlib.Path):
+    aut = formals.Automata("abc")
+    aut.start.is_term = True
+    aut.make_node(term=True)
+    aut.make_node(term=True)
+    aut.make_node()
+    
+    aut.link(0, 0, "a")
+    aut.link(0, 1, "b")
+    aut.link(0, 0, "c")
+    aut.link(1, 3, "a")
+    aut.link(1, 3, "b")
+    aut.link(1, 2, "c")
+    aut.link(2, 2, "a")
+    aut.link(2, 3, "b")
+    aut.link(2, 2, "c")
+    aut.link(3, 3, "a")
+    aut.link(3, 3, "b")
+    aut.link(3, 3, "c")
+    
+    dump(aut, output_dir, ("test", 1, 1, "aut"))
+    re = formals.automata_to_regex(aut)
+    re = formals.optimize_regex(re)
+    dump_regex(re, output_dir, ("test", 1, 1))
+
+
+def solve_test_1_2(output_dir: pathlib.Path):
+    aut = formals.Automata("ab")
+    for key in itertools.product(range(2), range(2), range(2)):
+        aut.make_node(key, term=key[1])
+    
+    aut.set_start((0, 0, 0))
+    aut.remove_node(0)
+    
+    for cnt_a, cnt_b in itertools.product(range(2), range(2)):
+        aut.link((0, cnt_a, cnt_b), (1, 1 - cnt_a,     cnt_b), "a")
+        aut.link((0, cnt_a, cnt_b), (1,     cnt_a,     cnt_b), "b")
+        aut.link((1, cnt_a, cnt_b), (0,     cnt_a,     cnt_b), "a")
+        aut.link((1, cnt_a, cnt_b), (0,     cnt_a, 1 - cnt_b), "b")
+    
+    dump(aut, output_dir, ("test", 1, 2), key_repr=lambda k: ' '.join(map(str, k)))
+
+
+def solve_test_1_3(output_dir: pathlib.Path):
+    # FDFA, MFDFA
+    re = formals.parse_regex("(1+aa)(b+ba)*bb*aa*")
+    # print(formals.reconstruct_regex(re))
+    aut: formals.Automata = formals.regex_to_automata(re)
+    aut = formals.make_full_dfa(aut)
+    dump(aut, output_dir, ("test", 1, 3, "fdfa"))
+    aut = formals.minimize(aut)
+    dump(aut, output_dir, ("test", 1, 3, "mfdfa"), key_repr=str)
+
+
+def solve_test_1_4(output_dir: pathlib.Path):
+    # regex
+    re = formals.parse_regex("(1+aa)(b+ba)*bb*aa*")
+    aut: formals.Automata = formals.regex_to_automata(re)
+    aut = formals.complement(aut)
+    re = formals.automata_to_regex(aut)
+    dump_regex(re, output_dir, ("test", 1, 4))
+
+
 def main():
     args = parser.parse_args()
     
@@ -199,6 +267,11 @@ def main():
     # solve_task_4_4(output_dir)
     # solve_task_4_5(output_dir)
     # solve_task_4_6(output_dir)
+    
+    # solve_test_1_1(output_dir)
+    # solve_test_1_2(output_dir)
+    # solve_test_1_3(output_dir)
+    # solve_test_1_4(output_dir)
 
     return 0
 
