@@ -27,7 +27,7 @@ class SuffixCounterVisitor(TreeVisitor[Regex]):
             return self.best_full_len is not None
         
         def update_seq(self, other: "SuffixCounterVisitor.Result") -> None:
-            if not (self.can_be_full() and other.can_be_full()):
+            if not (self.can_be_full and other.can_be_full):
                 self.best_suff_len = other.best_suff_len
                 self.best_full_len = None
                 return
@@ -82,11 +82,9 @@ class SuffixCounterVisitor(TreeVisitor[Regex]):
     
     @TreeVisitor.handler(Concat)
     def visit_concat(self, node: Concat) -> Result:
-        children_rev: typing.Final[typing.List[Regex]] = list(reversed(node.children))
-        
         result: self.Result = self.Result(0, 0)
         
-        for child in children_rev:
+        for child in reversed(node.get_children()):
             result.update_seq(self.visit(child))
         
         return result
@@ -95,7 +93,7 @@ class SuffixCounterVisitor(TreeVisitor[Regex]):
     def visit_star(self, node: Star) -> Result:
         child_result: self.Result = self.visit(node.get_children()[0])
         
-        if child_result.can_be_full():
+        if child_result.can_be_full:
             return self.Result(float("+inf"), float("+inf"))
         
         return child_result

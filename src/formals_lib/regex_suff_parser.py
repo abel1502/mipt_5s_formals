@@ -66,6 +66,8 @@ class RegexSuffParser:
         if ch == "*":
             return regex.Star(self._pop())
         
+        raise RegexSyntaxError(f"Unrecognized character: {ch} ({hex(ord(ch))})")
+        
     
     def parse(self) -> regex.Regex:
         for ch in self._get_chars():
