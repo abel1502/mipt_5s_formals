@@ -253,14 +253,17 @@ def solve_test_1_4(output_dir: pathlib.Path):
 
 
 def solve_task_6_5():
-    print("Task 6.5 - interactive solution")
+    print("Task 6.5 - interactive solution (stdin input)")
     
-    alpha, x, k = input().split()
-    k = int(k)
+    # "ab+c.aba.*.bac.+.+* a 2" -> "NO"
+    # "acb..bab.c. * .ab.ba. + . + *a. c 0" -> "YES"
     
-    alpha: str
-    x: str
-    k: int
+    tokens = input().split()
+    assert len(tokens) >- 3, "Not enough inputs. Expected: <alpha> <x> <k>"
+    alpha: str = ''.join(tokens[:-2])
+    x: str = tokens[-2]
+    k: int = int(tokens[-1])
+    del tokens
     
     regex: formals.Regex = formals.parse_suff_regex(alpha)
     

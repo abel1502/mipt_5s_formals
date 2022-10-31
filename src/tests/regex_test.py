@@ -3,7 +3,7 @@ import typing
 import unittest
 
 import utils
-from formals_lib import regex, regex_parser
+from formals_lib import regex, regex_optimize, regex_parser, regex_suff_parser
 
 
 class RegexTest(unittest.TestCase):
@@ -83,7 +83,33 @@ class RegexTest(unittest.TestCase):
         
         self.assertEqual(parse_back("(a+0)^2"), "(a+0)(a+0)")
         self.assertEqual(parse_back("(a+0)^2*"), "((a+0)(a+0))*")
-
+    
+    def test_suff_parse(self):
+        samples: typing.Final[typing.List[
+            typing.Tuple[str, str]
+        ]] = [
+            ("a", "a"),
+            ("a*", "a*"),
+            ("ab+", "a+b"),
+            # Somewhat bad test, because the order of letters doesn't have to be preserved.
+            # But I've made sure my implementation does preserve it.
+            ("ab+c+", "a+b+c"),
+            ("ab.", "ab"),
+            ("a*b.", "a*b"),
+            ("ba+c.a+", "(b+a)c + a"),
+            ("ab+c.aba.*.bac.+.+*", "((a+b)c + a(ba)* (b+ac))*"),
+            ("acb..bab.c. * .ab.ba. + . + *a.", "(acb + b(abc)* (ab+ba))*a"),
+        ]
+        
+        for suff, normal in samples:
+            with self.subTest(suff=suff, normal=normal):
+                suff_re: regex.Regex = regex_suff_parser.parse_suff_regex(suff)
+                normal_re: regex.Regex = regex_parser.parse_regex(normal)
+                
+                suff_re = regex_optimize.optimize_regex(suff_re)
+                normal_re = regex_optimize.optimize_regex(normal_re)
+                
+                self.assertEqual(suff_re, normal_re)
 
 
 if __name__ == "__main__":
