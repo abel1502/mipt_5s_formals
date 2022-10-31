@@ -27,17 +27,22 @@ class SuffixCounterVisitor(TreeVisitor[Regex]):
             return self.best_full_len is not None
         
         def update_seq(self, other: "SuffixCounterVisitor.Result") -> None:
-            if not (self.can_be_full and other.can_be_full):
-                self.best_suff_len = other.best_suff_len
-                self.best_full_len = None
+            """
+            Note: Called right-to-left!
+            """
+            
+            if not self.can_be_full:
                 return
             
             self.best_suff_len = max(
-                other.best_suff_len,
-                self.best_suff_len + other.best_full_len
+                self.best_suff_len,
+                self.best_full_len + other.best_suff_len
             )
             
-            self.best_full_len = self.best_full_len + other.best_full_len
+            if not other.can_be_full:
+                self.best_full_len = None
+            else:
+                self.best_full_len += other.best_full_len
         
         def update_alt(self, other: "SuffixCounterVisitor.Result") -> None:
             self.best_suff_len = max(
@@ -48,7 +53,7 @@ class SuffixCounterVisitor(TreeVisitor[Regex]):
             self.best_full_len = max(
                 self.best_full_len,
                 other.best_full_len,
-                key=lambda x: x if x is not None else -1
+                key=lambda x: -1 if x is None else x
             )
     
     
@@ -62,9 +67,9 @@ class SuffixCounterVisitor(TreeVisitor[Regex]):
     def apply(self, node: Regex, target_len: int) -> bool:
         assert target_len >= 0, "Target length must be non-negative"
         
-        result_len: int | None = self.visit(node).best_suff_len
+        result_len: float = self.visit(node).best_suff_len
         
-        return result_len is None or result_len >= target_len
+        return result_len >= target_len
     
     @TreeVisitor.handler(Letter)
     def visit_letter(self, node: Letter) -> Result:
@@ -82,7 +87,7 @@ class SuffixCounterVisitor(TreeVisitor[Regex]):
     
     @TreeVisitor.handler(Concat)
     def visit_concat(self, node: Concat) -> Result:
-        result: self.Result = self.Result(0, 0)
+        result: SuffixCounterVisitor.Result = self.Result(0, 0)
         
         for child in reversed(node.get_children()):
             result.update_seq(self.visit(child))
@@ -91,10 +96,14 @@ class SuffixCounterVisitor(TreeVisitor[Regex]):
 
     @TreeVisitor.handler(Star)
     def visit_star(self, node: Star) -> Result:
-        child_result: self.Result = self.visit(node.get_children()[0])
+        child_result: SuffixCounterVisitor.Result = self.visit(node.get_children()[0])
         
         if child_result.can_be_full:
             return self.Result(float("+inf"), float("+inf"))
+        
+        if child_result.best_suff_len == 0:
+            # It's important to handle this seaparately, because Star can transform bad regexes into One
+            return self.Result(0, 0)
         
         return child_result
 
@@ -103,7 +112,7 @@ class SuffixCounterVisitor(TreeVisitor[Regex]):
         if len(node.get_children()) == 0:
             raise ValueError("Empty either (zero) is not allowed in the regex")
         
-        result: self.Result = self.Result(0, None)
+        result: SuffixCounterVisitor.Result = self.Result(0, None)
         
         for child in node.get_children():
             result.update_alt(self.visit(child))
