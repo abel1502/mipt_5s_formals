@@ -252,6 +252,23 @@ def solve_test_1_4(output_dir: pathlib.Path):
     dump_regex(re, output_dir, ("test", 1, 4))
 
 
+def solve_task_6_5():
+    print("Task 6.5 - interactive solution")
+    
+    alpha, x, k = input().split()
+    k = int(k)
+    
+    alpha: str
+    x: str
+    k: int
+    
+    regex: formals.Regex = formals.parse_suff_regex(alpha)
+    
+    result: bool = formals.regex_has_suffix(regex, x, k)
+    
+    print("YES" if result else "NO")
+
+
 def main():
     args = parser.parse_args()
     
@@ -267,11 +284,12 @@ def main():
     # solve_task_4_4(output_dir)
     # solve_task_4_5(output_dir)
     # solve_task_4_6(output_dir)
-    
     # solve_test_1_1(output_dir)
     # solve_test_1_2(output_dir)
     # solve_test_1_3(output_dir)
     # solve_test_1_4(output_dir)
+    
+    solve_task_6_5()  # Interactive!
 
     return 0
 
