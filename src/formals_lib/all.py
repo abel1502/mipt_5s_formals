@@ -10,3 +10,5 @@ from .automata_complement import *
 from .automata_minimize import *
 from .regex_optimize import *
 from .automata_cmp import *
+from .regex_suff_parser import *
+from .regex_longestsuff import *

@@ -59,7 +59,8 @@ class RegexOptimizer(TreeVisitor[Regex]):
 
     @TreeVisitor.handler(Either)
     def visit_either(self, node: Either) -> Regex:
-        result: typing.Set[Regex] = set()
+        # Not a set because we want to preserve order
+        result: typing.Dict[Regex, None] = dict()
 
         for child in node.get_children():
             child_regex: Regex = self.visit(child)
@@ -68,16 +69,18 @@ class RegexOptimizer(TreeVisitor[Regex]):
                 continue
             
             if isinstance(child_regex, Either):
-                result.update(child_regex.get_children())
+                result.update(dict.fromkeys(child_regex.get_children()))
                 continue
             
-            result.add(child_regex)
+            result[child_regex] = None
+        
+        result: typing.List[Regex] = list(result.keys())
         
         if len(result) == 0:
             return Zero()
         
         if len(result) == 1:
-            return next(iter(result))
+            return result[0]
         
         return Either(*result)
 

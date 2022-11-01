@@ -1,7 +1,15 @@
 from __future__ import annotations
 import typing
-import pydotplus as dot
 import pathlib
+
+
+try:
+    import pydotplus as dot
+except ImportError:
+    import warnings
+    warnings.warn("PyDotPlus not installed, graphviz functionality will not be available")
+    dot = None
+
 
 from .automata import *
 
@@ -11,6 +19,9 @@ class AutomataDotDumper:
     _key_repr: typing.Callable[[typing.Any], str]
 
     def __init__(self, name="Automata", key_repr: typing.Callable[[typing.Any], str] = str, **kwargs):
+        if dot is None:
+            raise NotImplementedError("PyDotPlus is required but not available!")
+        
         self._graph = dot.Dot(
             name,
             # rankdir="TD",
@@ -70,7 +81,11 @@ class AutomataDotDumper:
         )
 
 
-def dump_automata(aut: Automata, file: pathlib.Path | str, fmt="svg", key_repr: typing.Callable[[typing.Any], str] = str, **kwargs):
+def dump_automata(aut: Automata,
+                  file: pathlib.Path | str,
+                  fmt="svg",
+                  key_repr: typing.Callable[[typing.Any], str] = str,
+                  **kwargs):
     dumper = AutomataDotDumper(key_repr=key_repr)
     dumper.process(aut)
     dumper.render_graph(file, fmt=fmt, **kwargs)
