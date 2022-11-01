@@ -98,12 +98,11 @@ class SuffixCounterVisitor(TreeVisitor[Regex]):
     def visit_star(self, node: Star) -> Result:
         child_result: SuffixCounterVisitor.Result = self.visit(node.get_children()[0])
         
-        if child_result.can_be_full:
-            return self.Result(float("+inf"), float("+inf"))
+        if not child_result.can_be_full:
+            return self.Result(child_result.best_suff_len, 0)
         
-        if child_result.best_suff_len == 0:
-            # It's important to handle this seaparately, because Star can transform bad regexes into One
-            return self.Result(0, 0)
+        if child_result.best_full_len > 0:
+            return self.Result(float("+inf"), float("+inf"))
         
         return child_result
 

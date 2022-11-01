@@ -37,6 +37,7 @@ class Task65Test(unittest.TestCase):
         TaskTestInfo("bc+a+a*", "a", None),
         TaskTestInfo("a(b+c)*d", "a", 0),
         TaskTestInfo("a+c+b+ccc+cccca", "c", 3),
+        TaskTestInfo("a1*", "a", 1),
         
         # The following two tests are from the example
         TaskTestInfo("((a+b)c + a(ba)* (b+ac))*", "a", 0),
@@ -44,12 +45,12 @@ class Task65Test(unittest.TestCase):
     ]
     
     
-    def assertSolutionGood(self, regex: regex.Regex | str, target_letter: str, target_len: int, result: bool) -> None:
-        if isinstance(regex, str):
-            regex = regex_parser.parse_regex(regex)
-        regex: regex.Regex
+    def assertSolutionGood(self, re: regex.Regex | str, target_letter: str, target_len: int, result: bool) -> None:
+        if isinstance(re, str):
+            re = regex_parser.parse_regex(re)
+        re: regex.Regex
         
-        predicted_result: bool = regex_longestsuff.regex_has_suffix(regex, target_letter, target_len)
+        predicted_result: bool = regex_longestsuff.regex_has_suffix(re, target_letter, target_len)
         self.assertEqual(predicted_result, result)
     
     
